@@ -1,6 +1,15 @@
 // Utilidades generales: nombres de nota, ids, descargas de archivos.
 'use strict';
 
+// El build UMD de abcjs, cargado como <script> normal (sin CommonJS/AMD),
+// expone la variable global como `ABCJS` (mayúsculas), no `abcjs`. El resto
+// del código de esta app usa `abcjs` en minúscula (como en la documentación
+// y como haría `require('abcjs')`), así que creamos ese alias aquí, en el
+// primer archivo que se carga.
+if (typeof window !== 'undefined' && window.ABCJS && !window.abcjs) {
+  window.abcjs = window.ABCJS;
+}
+
 const NOTE_NAMES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 // Do central (C4) = MIDI 60. Umbral por defecto para separar manos cuando
