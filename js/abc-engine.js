@@ -29,6 +29,14 @@ class AbcEngine {
     this._rafId = null;
     this._activeSets = null;
 
+    // Cursor + resaltado en rojo sobre la partitura (via abcjs.TimingCallbacks,
+    // que corre en paralelo al synth — misma técnica que usa abcjs internamente
+    // para sus propios ejemplos de cursor).
+    this._timingCallbacks = null;
+    this._highlightedElements = [];
+    this._cursorEl = null;
+    this._lastCursorLine = -1;
+
     this._runLoop = this._runLoop.bind(this);
   }
 
@@ -164,7 +172,90 @@ class AbcEngine {
     // no se desincronice del sonido.
     this._clockOrigin = this.audioContext.currentTime - startSeconds;
     this._runLoop();
+    this._startScoreCursor(startSeconds);
     this.onStatusChange('playing');
+  }
+
+  _startScoreCursor(startSeconds) {
+    if (this._timingCallbacks) {
+      try { this._timingCallbacks.stop(); } catch (err) { /* ya estaba parado */ }
+    }
+    this._clearScoreHighlight();
+    this._cursorEl = null;
+    this._lastCursorLine = -1;
+    this._timingCallbacks = new abcjs.TimingCallbacks(this.visualObj, {
+      qpm: this._effectiveQpm(),
+      eventCallback: (ev) => this._handleTimingEvent(ev),
+    });
+    const percent = this.totalDuration > 0 ? clamp(startSeconds / this.totalDuration, 0, 1) : 0;
+    if (percent > 0) this._timingCallbacks.start(percent, 'percent');
+    else this._timingCallbacks.start();
+  }
+
+  _clearScoreHighlight() {
+    for (const el of this._highlightedElements) {
+      if (el && el.classList) el.classList.remove('abcjs-note-playing');
+    }
+    this._highlightedElements = [];
+  }
+
+  _handleTimingEvent(event) {
+    if (!event) {
+      // Fin de la pieza: apaga el resaltado, deja el cursor donde estaba.
+      this._clearScoreHighlight();
+      return;
+    }
+    // Algunos eventos son solo "marcadores" internos de abcjs (p.ej. el
+    // punto donde una nota ligada cruza una barra de compás) y no traen
+    // notas nuevas: si les aplicáramos el resaltado igual, cortaríamos el
+    // rojo de una nota ligada justo antes de que termine de sonar.
+    if (event.elements && event.elements.length > 0) {
+      this._clearScoreHighlight();
+      for (const group of event.elements) {
+        for (const el of group) {
+          if (el && el.classList) {
+            el.classList.add('abcjs-note-playing');
+            this._highlightedElements.push(el);
+          }
+        }
+      }
+    }
+    this._positionCursor(event);
+  }
+
+  _positionCursor(event) {
+    if (event.left === null || event.left === undefined || typeof event.line !== 'number') return;
+    const svgs = this.scoreEl.querySelectorAll('svg');
+    const svg = svgs[event.line];
+    if (!svg) return;
+    if (!this._cursorEl || this._cursorEl.ownerSVGElement !== svg) {
+      if (this._cursorEl && this._cursorEl.parentNode) this._cursorEl.parentNode.removeChild(this._cursorEl);
+      this._cursorEl = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      this._cursorEl.setAttribute('class', 'abcjs-cursor');
+      svg.appendChild(this._cursorEl);
+    }
+    this._cursorEl.setAttribute('x1', event.left);
+    this._cursorEl.setAttribute('x2', event.left);
+    this._cursorEl.setAttribute('y1', event.top);
+    this._cursorEl.setAttribute('y2', event.top + event.height);
+
+    if (event.line !== this._lastCursorLine) {
+      this._lastCursorLine = event.line;
+      // La partitura "sigue" el compás actual: si la pieza tiene varias
+      // líneas, desplaza la página para mantener a la vista la línea que
+      // suena ahora.
+      svg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  _stopScoreCursor() {
+    if (this._timingCallbacks) {
+      try { this._timingCallbacks.stop(); } catch (err) { /* ya estaba parado */ }
+    }
+    this._clearScoreHighlight();
+    if (this._cursorEl && this._cursorEl.parentNode) this._cursorEl.parentNode.removeChild(this._cursorEl);
+    this._cursorEl = null;
+    this._lastCursorLine = -1;
   }
 
   _currentSeconds() {
@@ -185,6 +276,7 @@ class AbcEngine {
     this.isPaused = false;
     this.isPlaying = true;
     this._runLoop();
+    if (this._timingCallbacks) this._timingCallbacks.start();
     this.onStatusChange('playing');
   }
 
@@ -194,6 +286,7 @@ class AbcEngine {
     this.isPaused = true;
     this._pausedAtSeconds = this._currentSeconds();
     if (this._rafId) cancelAnimationFrame(this._rafId);
+    if (this._timingCallbacks) this._timingCallbacks.pause();
     this.onStatusChange('paused');
   }
 
@@ -209,6 +302,7 @@ class AbcEngine {
     this._pausedAtSeconds = 0;
     if (this.keyboard) this.keyboard.allNotesOff();
     this._activeSets = this.tracks.map(() => new Set());
+    this._stopScoreCursor();
   }
 
   /** Vuelve al principio y arranca a tocar de nuevo. */
@@ -282,6 +376,7 @@ class AbcEngine {
     this.isPaused = false;
     if (this.keyboard) this.keyboard.allNotesOff();
     this._activeSets = this.tracks.map(() => new Set());
+    this._stopScoreCursor();
     this.onStatusChange('finished');
   }
 

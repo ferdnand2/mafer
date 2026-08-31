@@ -11,6 +11,7 @@
   --color-left: #3b7cd6;
   --color-left-soft: #bcd7f7;
   --color-both: #8a4fd6;
+  --color-now-playing: #e0426b;
   --radius: 12px;
 }
 
@@ -107,7 +108,11 @@ body {
 .score-wrapper { margin-top: 14px; border-top: 1px dashed var(--color-border); padding-top: 12px; }
 .score { overflow-x: auto; min-height: 120px; }
 
-.abcjs-cursor { stroke: var(--color-primary-dark); stroke-width: 2; }
+.abcjs-cursor { stroke: var(--color-now-playing); stroke-width: 3px; pointer-events: none; }
+.abcjs-note-playing,
+.abcjs-note-playing * {
+  fill: var(--color-now-playing) !important;
+}
 
 .playback-bar {
   background: #fffaf3;
@@ -127,7 +132,9 @@ body {
 .playback-status { margin-left: auto; font-size: 0.8rem; color: var(--color-muted); }
 
 .keyboard-container { width: 100%; overflow-x: auto; display: flex; justify-content: center; }
-.piano-svg { max-width: 100%; height: 120px; }
+.piano-svg { max-width: 100%; height: 120px; transition: height 0.35s ease; }
+/* Mientras suena, el teclado crece un poco para que se vean mejor los detalles. */
+.keyboard-container.is-playing .piano-svg { height: 158px; }
 
 .key { stroke: #333; stroke-width: 0.6; cursor: pointer; transition: fill 0.05s linear; }
 .key-white { fill: #fffdf8; }

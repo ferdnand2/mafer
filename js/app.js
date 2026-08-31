@@ -83,6 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
     els.btnPlay.disabled = m.play;
     els.btnPause.disabled = m.pause;
     els.playbackStatus.textContent = m.text;
+    // El teclado se ve un poco más grande mientras suena, para que se
+    // noten mejor los detalles; vuelve a su tamaño normal al pausar/parar.
+    els.keyboardContainer.classList.toggle('is-playing', status === 'playing');
   }
 
   function showError(err) {
