@@ -35,7 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const library = new PieceLibrary();
-  const keyboard = new PianoKeyboard(els.keyboardContainer, { min: 48, max: 84 });
+  // C2 a C7 (5 octavas): 2 octavas más que antes, una de más grave y otra
+  // de más aguda, para que se vean piezas con manos más separadas.
+  const keyboard = new PianoKeyboard(els.keyboardContainer, { min: 36, max: 96 });
   const notePreview = new NotePreviewPlayer();
 
   let currentPieceId = null;
@@ -100,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
     engine.resetTempo();
     els.tempoRange.value = 100;
     els.tempoValue.textContent = '100%';
-    keyboard.setRange(48, 84);
+    keyboard.setRange(36, 96);
   }
 
   function renderCurrentAbc() {
