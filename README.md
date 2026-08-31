@@ -74,7 +74,10 @@ js/app.js                  Conecta todo con la interfaz
 
 ## Librerías usadas
 
-- [abcjs](https://www.abcjs.net/) — notación, motor de audio y exportación MIDI.
-- [@tonejs/midi](https://github.com/Tonejs/Midi) — lectura de archivos MIDI importados.
+- [abcjs](https://www.abcjs.net/) v6.7.0 — notación, motor de audio y exportación MIDI.
+- [@tonejs/midi](https://github.com/Tonejs/Midi) v2.0.28 — lectura de archivos MIDI importados.
 
-Ambas se cargan desde jsDelivr, sin paso de instalación.
+Ambas están alojadas dentro de este repo, en `vendor/` (copiadas tal cual
+de sus builds oficiales), en vez de cargarse desde un CDN externo — así el
+sitio no depende de que jsDelivr esté disponible ni de que algún
+bloqueador de anuncios/red no filtre ese dominio.
