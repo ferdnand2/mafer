@@ -131,7 +131,16 @@ body {
 .swatch-left { background: var(--color-left); }
 .playback-status { margin-left: auto; font-size: 0.8rem; color: var(--color-muted); }
 
-.keyboard-container { width: 100%; overflow-x: auto; display: flex; justify-content: center; }
+/* Fila inferior: teclado a la izquierda, notas tocadas + minipentagrama a
+   la derecha. En pantallas angostas los paneles laterales bajan debajo
+   del teclado (flex-wrap). */
+.playback-lower {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 14px;
+}
+.keyboard-container { flex: 1 1 320px; min-width: 260px; overflow-x: auto; display: flex; justify-content: center; }
 .piano-svg { max-width: 100%; height: 120px; transition: height 0.35s ease; }
 /* Mientras suena, el teclado crece un poco para que se vean mejor los detalles. */
 .keyboard-container.is-playing .piano-svg { height: 158px; }
@@ -144,29 +153,28 @@ body {
 .key.active-both { fill: var(--color-both) !important; }
 .key-label { font-size: 6px; fill: var(--color-muted); text-anchor: middle; pointer-events: none; }
 
+.side-panels { flex: 0 0 auto; display: flex; gap: 10px; }
+
 .note-log {
-  position: fixed;
-  top: 88px;
-  right: 16px;
   width: 150px;
-  max-width: 40vw;
-  max-height: 38vh;
+  height: 120px;
   background: var(--color-panel);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  z-index: 20;
 }
 .note-log-header {
   display: flex; justify-content: space-between; align-items: center;
   padding: 6px 10px; font-size: 0.78rem; font-weight: 600;
   border-bottom: 1px solid var(--color-border); background: #fff8ef;
+  flex: 0 0 auto;
 }
 .note-log-header button { padding: 2px 6px; font-size: 0.85rem; }
 .note-log-list {
+  flex: 1 1 auto;
   overflow-y: auto; padding: 6px 10px; display: flex; flex-direction: column;
   gap: 4px; font-size: 0.85rem; font-family: 'Consolas', 'Courier New', monospace;
 }
@@ -176,8 +184,24 @@ body {
 .note-log-entry { padding: 2px 4px; border-radius: 4px; }
 .note-log-entry:nth-child(odd) { background: #faf5ea; }
 
+.mini-staff {
+  width: 190px;
+  height: 120px;
+  background: #fffdf8;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.mini-staff svg { max-width: 100%; max-height: 100%; }
+
 @media (max-width: 800px) {
-  .note-log { top: auto; bottom: 232px; width: 130px; }
+  .playback-lower { flex-direction: column; }
+  .side-panels { width: 100%; }
+  .note-log, .mini-staff { flex: 1 1 0; width: auto; }
 }
 
 .modal {

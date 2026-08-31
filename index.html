@@ -72,17 +72,6 @@
 
 </main>
 
-<!-- Lista flotante de notas tocadas (clic en la partitura o en el teclado) -->
-<div id="note-log" class="note-log">
-  <div class="note-log-header">
-    <span>🎵 Notas tocadas</span>
-    <button id="btn-clear-note-log" class="btn btn-ghost" title="Limpiar lista">🗑️</button>
-  </div>
-  <div id="note-log-list" class="note-log-list">
-    <p class="note-log-empty">Toca una nota de la partitura o una tecla del teclado.</p>
-  </div>
-</div>
-
 <!-- Controles de reproducción + teclado, fijos abajo -->
 <footer class="playback-bar">
   <div class="transport">
@@ -100,7 +89,21 @@
     </div>
     <span id="playback-status" class="playback-status"></span>
   </div>
-  <div id="keyboard-container" class="keyboard-container"></div>
+  <div class="playback-lower">
+    <div id="keyboard-container" class="keyboard-container"></div>
+    <div class="side-panels">
+      <div id="note-log" class="note-log">
+        <div class="note-log-header">
+          <span>🎵 Notas tocadas</span>
+          <button id="btn-clear-note-log" class="btn btn-ghost" title="Limpiar lista">🗑️</button>
+        </div>
+        <div id="note-log-list" class="note-log-list">
+          <p class="note-log-empty">Toca una nota de la partitura o una tecla del teclado.</p>
+        </div>
+      </div>
+      <div id="mini-staff" class="mini-staff" title="Última nota tocada"></div>
+    </div>
+  </div>
 </footer>
 
 <div id="help-modal" class="modal" hidden>

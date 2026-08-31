@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnCloseHelp: document.getElementById('btn-close-help'),
     noteLogList: document.getElementById('note-log-list'),
     btnClearNoteLog: document.getElementById('btn-clear-note-log'),
+    miniStaff: document.getElementById('mini-staff'),
   };
 
   const library = new PieceLibrary();
@@ -67,6 +68,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     while (els.noteLogList.children.length > 200) els.noteLogList.removeChild(els.noteLogList.firstChild);
     els.noteLogList.scrollTop = els.noteLogList.scrollHeight;
+    renderMiniStaff(midiList);
+  }
+
+  // Construye un mini ABC de dos pentagramas (sol/fa) con la(s) nota(s)
+  // dada(s), cada una en el pentagrama que le corresponde según el mismo
+  // umbral (Do central) que separa las manos en el resto de la app.
+  function buildMiniStaffAbc(midiList) {
+    const trebleMidis = midiList.filter((m) => m >= HAND_SPLIT_MIDI_THRESHOLD);
+    const bassMidis = midiList.filter((m) => m < HAND_SPLIT_MIDI_THRESHOLD);
+    const toToken = (midis) => {
+      if (midis.length === 0) return 'x';
+      const tokens = midis.map((m) => resolvePitchToken(m, {}));
+      return tokens.length > 1 ? `[${tokens.join('')}]` : tokens[0];
+    };
+    return [
+      'X:1',
+      'L:1/4',
+      'K:C',
+      '%%staves {(1) (2)}',
+      'V:1 clef=treble',
+      `${toToken(trebleMidis)} |]`,
+      'V:2 clef=bass',
+      `${toToken(bassMidis)} |]`,
+    ].join('\n');
+  }
+
+  function renderMiniStaff(midiList) {
+    els.miniStaff.innerHTML = '';
+    try {
+      abcjs.renderAbc(els.miniStaff, buildMiniStaffAbc(midiList), { scale: 0.9, staffwidth: 150, add_classes: false });
+    } catch (err) {
+      // Si por lo que sea no se puede dibujar, simplemente se deja vacío.
+    }
   }
 
   els.btnClearNoteLog.addEventListener('click', () => {
