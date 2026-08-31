@@ -63,7 +63,7 @@ class AbcEngine {
       // dejar que scale controle el tamaño; `.score` tiene overflow-x:auto
       // por si el ancho fijo no cabe en pantallas angostas.
       result = abcjs.renderAbc(this.scoreEl, cleanedAbc, {
-        scale: 0.8,
+        scale: 0.9,
         clickListener: (abcElem) => this._handleScoreClick(abcElem),
       });
     } catch (err) {
