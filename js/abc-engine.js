@@ -52,7 +52,12 @@ class AbcEngine {
     // vivo del texto (auto-render mientras se escribe) no te cambia el
     // tempo que ya habías elegido con el control. Usa resetTempo() al
     // cargar una pieza distinta desde cero.
-    this.baseQpm = (this.visualObj.metaText && this.visualObj.metaText.tempo && this.visualObj.metaText.tempo.qpm) || 100;
+    // OJO: metaText.tempo NO tiene un campo `.qpm` (tiene `.bpm` y
+    // `.duration`, p.ej. duration:[0.25] para "Q:1/4=90"). Hay que dejar
+    // que abcjs resuelva eso a negras-por-minuto reales con getBpm(),
+    // que además tiene en cuenta si el tempo se escribió respecto a otra
+    // figura (p.ej. "Q:1/8=160" o "Q:160" con L: distinto de 1/4).
+    this.baseQpm = typeof this.visualObj.getBpm === 'function' ? this.visualObj.getBpm() : 100;
     this._buildTracks();
     const warnings = this.visualObj.warnings || [];
     return { visualObj: this.visualObj, warnings, pitchRange: this._pitchRange() };
