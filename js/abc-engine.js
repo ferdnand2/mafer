@@ -4,10 +4,12 @@
 'use strict';
 
 class AbcEngine {
-  constructor({ scoreEl, keyboard, onStatusChange }) {
+  constructor({ scoreEl, keyboard, onStatusChange, onNoteClick }) {
     this.scoreEl = scoreEl;
     this.keyboard = keyboard;
     this.onStatusChange = onStatusChange || (() => {});
+    this.onNoteClick = onNoteClick || null;
+    this._notesByStartChar = new Map();
 
     this.visualObj = null;
     this.abcString = '';
@@ -36,7 +38,10 @@ class AbcEngine {
     this.scoreEl.innerHTML = '';
     let result;
     try {
-      result = abcjs.renderAbc(this.scoreEl, abcString, { responsive: 'resize' });
+      result = abcjs.renderAbc(this.scoreEl, abcString, {
+        responsive: 'resize',
+        clickListener: (abcElem) => this._handleScoreClick(abcElem),
+      });
     } catch (err) {
       throw new Error(`No se pudo interpretar el código ABC: ${err.message || err}`);
     }
@@ -75,13 +80,35 @@ class AbcEngine {
       index,
       notes: events
         .filter((ev) => ev.cmd === 'note' && typeof ev.pitch === 'number')
-        .map((ev) => ({ start: toSeconds(ev.start), duration: toSeconds(ev.duration), midi: ev.pitch })),
+        .map((ev) => ({
+          start: toSeconds(ev.start),
+          duration: toSeconds(ev.duration),
+          midi: ev.pitch,
+          startChar: ev.startChar,
+        })),
     }));
     const tracksWithNotes = this.tracks.filter((t) => t.notes.length > 0);
     this._handMode = tracksWithNotes.length >= 2 ? 'voice' : 'pitch';
     const noteBasedTotal = Math.max(0, ...this.tracks.flatMap((t) => t.notes.map((n) => n.start + n.duration)));
     this.totalDuration = Math.max(toSeconds(flattened.totalDuration || 0), noteBasedTotal);
     this._activeSets = this.tracks.map(() => new Set());
+
+    // Índice posición-en-el-texto -> midis, para saber qué nota(s) sonaban
+    // en el sitio exacto donde el usuario hace clic sobre la partitura.
+    this._notesByStartChar = new Map();
+    for (const track of this.tracks) {
+      for (const note of track.notes) {
+        if (typeof note.startChar !== 'number') continue;
+        if (!this._notesByStartChar.has(note.startChar)) this._notesByStartChar.set(note.startChar, []);
+        this._notesByStartChar.get(note.startChar).push(note.midi);
+      }
+    }
+  }
+
+  _handleScoreClick(abcElem) {
+    if (!this.onNoteClick || !abcElem || typeof abcElem.startChar !== 'number') return;
+    const midiList = this._notesByStartChar.get(abcElem.startChar);
+    if (midiList && midiList.length) this.onNoteClick([...new Set(midiList)]);
   }
 
   _handForNote(trackIndex, midi) {

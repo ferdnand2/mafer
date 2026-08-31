@@ -72,6 +72,17 @@
 
 </main>
 
+<!-- Lista flotante de notas tocadas (clic en la partitura o en el teclado) -->
+<div id="note-log" class="note-log">
+  <div class="note-log-header">
+    <span>🎵 Notas tocadas</span>
+    <button id="btn-clear-note-log" class="btn btn-ghost" title="Limpiar lista">🗑️</button>
+  </div>
+  <div id="note-log-list" class="note-log-list">
+    <p class="note-log-empty">Toca una nota de la partitura o una tecla del teclado.</p>
+  </div>
+</div>
+
 <!-- Controles de reproducción + teclado, fijos abajo -->
 <footer class="playback-bar">
   <div class="transport">
@@ -103,6 +114,7 @@
       <li>Usa el control de <strong>tempo</strong> para ir más rápido o más lento, <strong>⏮️</strong> para reiniciar y <strong>⬇️ MIDI</strong> para descargar el archivo MIDI de la pieza.</li>
       <li>Guarda tus piezas con <strong>💾</strong>: quedan en este navegador, en tu biblioteca de la izquierda.</li>
       <li>En la pestaña <strong>Importar MIDI</strong> puedes abrir un archivo <code>.mid</code>: se puede reproducir directamente y también convertir a ABC (aproximado).</li>
+      <li>Toca cualquier nota de la partitura o cualquier tecla del teclado para escucharla sola: su nombre aparece en la lista "Notas tocadas" (por ejemplo, <code>G3:Sol3</code>).</li>
     </ol>
   </div>
 </div>
@@ -118,6 +130,7 @@
 <script src="js/library.js"></script>
 <script src="js/abc-engine.js"></script>
 <script src="js/midi-tools.js"></script>
+<script src="js/note-preview.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

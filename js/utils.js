@@ -25,6 +25,21 @@ function midiToNoteName(midi) {
   return `${name}${octave}`;
 }
 
+const SOLFEGE_NAMES = { C: 'Do', D: 'Re', E: 'Mi', F: 'Fa', G: 'Sol', A: 'La', B: 'Si' };
+
+function midiToSolfege(midi) {
+  const name = midiToNoteName(midi);
+  const match = name.match(/^([A-G])(#?)(-?\d+)$/);
+  if (!match) return name;
+  const [, letter, sharp, octave] = match;
+  return `${SOLFEGE_NAMES[letter]}${sharp}${octave}`;
+}
+
+// Formato pedido para mostrar al tocar una nota: "G3:Sol3".
+function midiToDisplayName(midi) {
+  return `${midiToNoteName(midi)}:${midiToSolfege(midi)}`;
+}
+
 function isBlackKeyMidi(midi) {
   const blacks = new Set([1, 3, 6, 8, 10]);
   return blacks.has(midi % 12);

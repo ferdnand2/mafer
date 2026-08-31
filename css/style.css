@@ -137,6 +137,42 @@ body {
 .key.active-both { fill: var(--color-both) !important; }
 .key-label { font-size: 6px; fill: var(--color-muted); text-anchor: middle; pointer-events: none; }
 
+.note-log {
+  position: fixed;
+  top: 88px;
+  right: 16px;
+  width: 150px;
+  max-width: 40vw;
+  max-height: 38vh;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 20;
+}
+.note-log-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 10px; font-size: 0.78rem; font-weight: 600;
+  border-bottom: 1px solid var(--color-border); background: #fff8ef;
+}
+.note-log-header button { padding: 2px 6px; font-size: 0.85rem; }
+.note-log-list {
+  overflow-y: auto; padding: 6px 10px; display: flex; flex-direction: column;
+  gap: 4px; font-size: 0.85rem; font-family: 'Consolas', 'Courier New', monospace;
+}
+.note-log-list .note-log-empty {
+  color: var(--color-muted); font-style: italic; font-family: inherit; font-size: 0.75rem; margin: 0;
+}
+.note-log-entry { padding: 2px 4px; border-radius: 4px; }
+.note-log-entry:nth-child(odd) { background: #faf5ea; }
+
+@media (max-width: 800px) {
+  .note-log { top: auto; bottom: 232px; width: 130px; }
+}
+
 .modal {
   position: fixed; inset: 0; background: rgba(0,0,0,0.45);
   display: flex; align-items: center; justify-content: center; z-index: 50;

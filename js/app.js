@@ -30,16 +30,46 @@ document.addEventListener('DOMContentLoaded', () => {
     btnHelp: document.getElementById('btn-help'),
     helpModal: document.getElementById('help-modal'),
     btnCloseHelp: document.getElementById('btn-close-help'),
+    noteLogList: document.getElementById('note-log-list'),
+    btnClearNoteLog: document.getElementById('btn-clear-note-log'),
   };
 
   const library = new PieceLibrary();
   const keyboard = new PianoKeyboard(els.keyboardContainer, { min: 48, max: 84 });
+  const notePreview = new NotePreviewPlayer();
 
   let currentPieceId = null;
   let currentImportedMidi = null; // { base64, fileName } cuando la pieza viene de un .mid importado
   let pendingMidi = null; // { midi, base64, fileName } recién abierto en "Importar MIDI", sin convertir aún
 
-  const engine = new AbcEngine({ scoreEl: els.score, keyboard, onStatusChange: handleStatusChange });
+  const engine = new AbcEngine({
+    scoreEl: els.score,
+    keyboard,
+    onStatusChange: handleStatusChange,
+    onNoteClick: (midiList) => handleNoteInteraction(midiList),
+  });
+  keyboard.onKeyClick = (midi) => handleNoteInteraction([midi]);
+
+  // Toca la(s) nota(s) clicada(s) y añade su nombre a la lista de notas
+  // tocadas (una debajo de otra; si es un acorde, todas las notas del clic).
+  function handleNoteInteraction(midiList) {
+    if (!midiList || midiList.length === 0) return;
+    notePreview.playChord(midiList);
+    const empty = els.noteLogList.querySelector('.note-log-empty');
+    if (empty) empty.remove();
+    for (const midi of midiList) {
+      const entry = document.createElement('div');
+      entry.className = 'note-log-entry';
+      entry.textContent = midiToDisplayName(midi);
+      els.noteLogList.appendChild(entry);
+    }
+    while (els.noteLogList.children.length > 200) els.noteLogList.removeChild(els.noteLogList.firstChild);
+    els.noteLogList.scrollTop = els.noteLogList.scrollHeight;
+  }
+
+  els.btnClearNoteLog.addEventListener('click', () => {
+    els.noteLogList.innerHTML = '<p class="note-log-empty">Toca una nota de la partitura o una tecla del teclado.</p>';
+  });
 
   function handleStatusChange(status) {
     const map = {
