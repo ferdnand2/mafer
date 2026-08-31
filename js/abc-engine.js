@@ -35,7 +35,7 @@ class AbcEngine {
     this._timingCallbacks = null;
     this._highlightedElements = [];
     this._cursorEl = null;
-    this._lastCursorLine = -1;
+    this._lastCursorTop = null;
 
     this._runLoop = this._runLoop.bind(this);
   }
@@ -182,7 +182,7 @@ class AbcEngine {
     }
     this._clearScoreHighlight();
     this._cursorEl = null;
-    this._lastCursorLine = -1;
+    this._lastCursorTop = null;
     this._timingCallbacks = new abcjs.TimingCallbacks(this.visualObj, {
       qpm: this._effectiveQpm(),
       eventCallback: (ev) => this._handleTimingEvent(ev),
@@ -224,12 +224,14 @@ class AbcEngine {
   }
 
   _positionCursor(event) {
-    if (event.left === null || event.left === undefined || typeof event.line !== 'number') return;
-    const svgs = this.scoreEl.querySelectorAll('svg');
-    const svg = svgs[event.line];
-    if (!svg) return;
-    if (!this._cursorEl || this._cursorEl.ownerSVGElement !== svg) {
-      if (this._cursorEl && this._cursorEl.parentNode) this._cursorEl.parentNode.removeChild(this._cursorEl);
+    if (event.left === null || event.left === undefined) return;
+    // OJO: por defecto abcjs dibuja UN SOLO <svg> para toda la partitura
+    // (todas las líneas son <g> dentro de ese mismo svg, con un único
+    // sistema de coordenadas) — no un <svg> por renglón. Solo se separa en
+    // varios <svg> si se pide explícitamente la opción oneSvgPerLine.
+    if (!this._cursorEl) {
+      const svg = this.scoreEl.querySelector('svg');
+      if (!svg) return;
       this._cursorEl = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       this._cursorEl.setAttribute('class', 'abcjs-cursor');
       svg.appendChild(this._cursorEl);
@@ -239,12 +241,12 @@ class AbcEngine {
     this._cursorEl.setAttribute('y1', event.top);
     this._cursorEl.setAttribute('y2', event.top + event.height);
 
-    if (event.line !== this._lastCursorLine) {
-      this._lastCursorLine = event.line;
+    if (event.top !== this._lastCursorTop) {
+      this._lastCursorTop = event.top;
       // La partitura "sigue" el compás actual: si la pieza tiene varias
       // líneas, desplaza la página para mantener a la vista la línea que
-      // suena ahora.
-      svg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // suena ahora (solo al cambiar de renglón, no en cada nota).
+      this._cursorEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
     }
   }
 
@@ -255,7 +257,7 @@ class AbcEngine {
     this._clearScoreHighlight();
     if (this._cursorEl && this._cursorEl.parentNode) this._cursorEl.parentNode.removeChild(this._cursorEl);
     this._cursorEl = null;
-    this._lastCursorLine = -1;
+    this._lastCursorTop = null;
   }
 
   _currentSeconds() {
