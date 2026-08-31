@@ -57,10 +57,12 @@ class AbcEngine {
       .join('\n');
     let result;
     try {
-      // Tamaño 100% (sin `scale`): vuelve al modo responsive, que ajusta
-      // el ancho de la partitura al contenedor sin achicar las figuras.
+      // scale:0.95, sin responsive (responsive e ignora `scale` por
+      // completo y además usa todo el ancho del contenedor, que fue lo
+      // que se vio "inmenso"; sin responsive, el ancho de referencia es
+      // fijo (~740px) en vez de expandirse al contenedor).
       result = abcjs.renderAbc(this.scoreEl, cleanedAbc, {
-        responsive: 'resize',
+        scale: 0.95,
         clickListener: (abcElem) => this._handleScoreClick(abcElem),
       });
     } catch (err) {
