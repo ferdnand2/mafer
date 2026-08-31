@@ -59,11 +59,11 @@ class AbcEngine {
     try {
       // OJO: abcjs ignora `scale` por completo cuando responsive:'resize'
       // está activo ("la redimensión ya se encarga de eso"), así que para
-      // poder achicar la partitura un 40% hay que renderizar sin modo
-      // responsive y dejar que scale controle el tamaño; `.score` tiene
-      // overflow-x:auto por si el ancho fijo no cabe en pantallas angostas.
+      // achicar la partitura hay que renderizar sin modo responsive y
+      // dejar que scale controle el tamaño; `.score` tiene overflow-x:auto
+      // por si el ancho fijo no cabe en pantallas angostas.
       result = abcjs.renderAbc(this.scoreEl, cleanedAbc, {
-        scale: 0.6,
+        scale: 0.8,
         clickListener: (abcElem) => this._handleScoreClick(abcElem),
       });
     } catch (err) {
