@@ -36,9 +36,20 @@ class AbcEngine {
   render(abcString) {
     this.stop();
     this.scoreEl.innerHTML = '';
+    // Una línea en blanco es, en el estándar ABC, el separador entre dos
+    // tonadas distintas dentro de un mismo archivo. Como esta app siempre
+    // edita UNA sola pieza (X:1), pero es normal separar visualmente
+    // secciones largas con líneas en blanco (como haría cualquier editor
+    // de texto), las quitamos antes de parsear para que no corten la
+    // pieza en trozos — si no, abcjs solo interpreta hasta la primera
+    // línea en blanco y descarta el resto en silencio.
+    const cleanedAbc = abcString
+      .split('\n')
+      .filter((line) => line.trim() !== '')
+      .join('\n');
     let result;
     try {
-      result = abcjs.renderAbc(this.scoreEl, abcString, {
+      result = abcjs.renderAbc(this.scoreEl, cleanedAbc, {
         responsive: 'resize',
         clickListener: (abcElem) => this._handleScoreClick(abcElem),
       });
@@ -76,10 +87,14 @@ class AbcEngine {
   _buildTracks() {
     const qpm = this._effectiveQpm();
     const flattened = this.visualObj.setUpAudio({ qpm });
-    // setUpAudio() da los tiempos en fracciones de redonda (negra = 0.25),
-    // no en segundos: hay que convertirlos usando el tempo real (qpm).
-    const tempo = flattened.tempo || qpm;
-    const toSeconds = (wholeNoteFraction) => (wholeNoteFraction * 240) / tempo;
+    // setUpAudio() da los tiempos en fracciones de redonda, no en segundos.
+    // OJO: getBpm()/qpm son "pulsos por minuto" usando como pulso la
+    // duración de getBeatLength() (p.ej. una negra con puntillo = 0.375
+    // en 6/8), NO siempre una negra (0.25) — por eso no se puede usar un
+    // factor fijo como "240/tempo" (eso solo vale si el pulso es negra).
+    // Fórmula general: segundos = fracción_de_redonda * 60 / (beatLength * qpm).
+    const beatLength = this.visualObj.getBeatLength ? this.visualObj.getBeatLength() : 0.25;
+    const toSeconds = (wholeNoteFraction) => (wholeNoteFraction * 60) / (beatLength * qpm);
     const rawTracks = (flattened && flattened.tracks) || [];
     this.tracks = rawTracks.map((events, index) => ({
       index,
