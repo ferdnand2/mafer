@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnDownloadAbc: document.getElementById('btn-download-abc'),
     inputOpenAbc: document.getElementById('input-open-abc'),
     btnNewPiece: document.getElementById('btn-new-piece'),
+    btnToggleAbc: document.getElementById('btn-toggle-abc'),
     libraryList: document.getElementById('library-list'),
     tabBtns: [...document.querySelectorAll('.tab-btn')],
     tabPanels: { abc: document.getElementById('tab-abc'), midi: document.getElementById('tab-midi') },
@@ -158,6 +159,19 @@ document.addEventListener('DOMContentLoaded', () => {
     clearTimeout(renderDebounce);
     renderDebounce = setTimeout(renderCurrentAbc, 400);
   });
+
+  // ---- Mostrar/ocultar el código ABC (la partitura ya muestra la pieza,
+  // el texto solo hace falta para editar) ----
+  const ABC_HIDDEN_STORAGE_KEY = 'mafer.abcHidden';
+  function setAbcHidden(hidden) {
+    els.abcInput.hidden = hidden;
+    els.btnToggleAbc.textContent = hidden ? '📝 Mostrar código' : '🙈 Ocultar código';
+    try { localStorage.setItem(ABC_HIDDEN_STORAGE_KEY, hidden ? '1' : '0'); } catch (err) { /* localStorage no disponible */ }
+  }
+  els.btnToggleAbc.addEventListener('click', () => setAbcHidden(!els.abcInput.hidden));
+  let abcHiddenAtStart = false;
+  try { abcHiddenAtStart = localStorage.getItem(ABC_HIDDEN_STORAGE_KEY) === '1'; } catch (err) { /* localStorage no disponible */ }
+  setAbcHidden(abcHiddenAtStart);
 
   // ---- Reproducción ----
   els.btnPlay.addEventListener('click', () => engine.play().catch(showError));
