@@ -95,10 +95,18 @@ function buildChordEvents(notes) {
 // Convierte una lista de eventos (silencios/acordes en unidades de L:1/16)
 // en el cuerpo de texto ABC de una voz, insertando barras de compás y
 // ligaduras cuando una nota queda partida por un compás.
-function buildHandVoiceAbc(events, unitsPerMeasure) {
+//
+// El espacio entre notas en ABC controla el "beaming": sin espacio se
+// agrupan bajo una sola barra (como corresponde a corcheas/semicorcheas
+// dentro de un mismo pulso); con espacio, cada una queda aislada con su
+// propia bandera. Por eso solo ponemos un espacio cuando el siguiente
+// token cae en un pulso distinto al anterior (agrupado por `beatUnits`),
+// no después de cada nota.
+function buildHandVoiceAbc(events, unitsPerMeasure, beatUnits) {
   let output = '';
   let unitsInMeasure = 0;
   let accState = {};
+  let prevBeatIndex = -1; // -1 = no poner espacio antes del primer token del compás
 
   for (const ev of events) {
     let remaining = ev.durUnits;
@@ -106,25 +114,41 @@ function buildHandVoiceAbc(events, unitsPerMeasure) {
       const spaceLeft = unitsPerMeasure - unitsInMeasure;
       const take = Math.min(remaining, spaceLeft);
       const lengthSuffix = take === 1 ? '' : String(take);
+      const beatIndex = Math.floor(unitsInMeasure / beatUnits);
+      if (prevBeatIndex !== -1 && beatIndex !== prevBeatIndex) output += ' ';
+
       if (ev.rest) {
-        output += `z${lengthSuffix} `;
+        output += `z${lengthSuffix}`;
       } else {
         const tokens = ev.pitches.map((p) => resolvePitchToken(p, accState));
         const core = tokens.length > 1 ? `[${tokens.join('')}]` : tokens[0];
         const tie = remaining > take ? '-' : '';
-        output += `${core}${lengthSuffix}${tie} `;
+        output += `${core}${lengthSuffix}${tie}`;
       }
+      prevBeatIndex = beatIndex;
+
       unitsInMeasure += take;
       remaining -= take;
       if (unitsInMeasure >= unitsPerMeasure) {
-        output += '| ';
+        output += ' | ';
         unitsInMeasure = 0;
         accState = {};
+        prevBeatIndex = -1;
       }
     }
   }
-  if (unitsInMeasure > 0) output += '|';
+  if (unitsInMeasure > 0) output += ' |';
   return output.trim();
+}
+
+// Duración del pulso (en unidades de L:1/16) según el compás: negra en
+// compases simples; negra con puntillo (3 corcheas) en compases
+// compuestos de denominador 8 con numerador múltiplo de 3 (6/8, 9/8,
+// 12/8, y 3/8 como caso propio de un solo pulso por compás).
+function getBeatUnits(numerator, denominator) {
+  if (denominator === 8 && numerator % 3 === 0) return 6;
+  if (denominator === 8) return 2;
+  return 4;
 }
 
 /**
@@ -166,8 +190,9 @@ function midiToAbc(midi, options = {}) {
     for (const n of rawNotes) (n.midiPitch >= HAND_SPLIT_MIDI_THRESHOLD ? right : left).push(n);
   }
 
-  const rightBody = buildHandVoiceAbc(buildChordEvents(right), unitsPerMeasure) || `z${unitsPerMeasure}`;
-  const leftBody = buildHandVoiceAbc(buildChordEvents(left), unitsPerMeasure) || `z${unitsPerMeasure}`;
+  const beatUnits = getBeatUnits(numerator, denominator);
+  const rightBody = buildHandVoiceAbc(buildChordEvents(right), unitsPerMeasure, beatUnits) || `z${unitsPerMeasure}`;
+  const leftBody = buildHandVoiceAbc(buildChordEvents(left), unitsPerMeasure, beatUnits) || `z${unitsPerMeasure}`;
 
   const title = (options.title || 'Pieza importada').replace(/[\r\n]+/g, ' ').trim() || 'Pieza importada';
 
