@@ -110,7 +110,7 @@ body {
    ancho de este contenedor — por eso hace falta un tope aquí (si no, en
    pantallas anchas se ve enorme). Ajustable: bajar/subir este número
    agranda o achica la partitura. */
-.score { overflow-x: auto; min-height: 120px; max-width: 820px; margin: 0 auto; }
+.score { overflow-x: auto; min-height: 120px; max-width: 960px; margin: 0 auto; }
 
 .abcjs-cursor { stroke: var(--color-now-playing); stroke-width: 3px; pointer-events: none; }
 .abcjs-note-playing,
