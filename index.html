@@ -67,6 +67,10 @@
     </div>
 
     <div class="score-wrapper">
+      <div class="score-size-control">
+        <label for="score-scale-range">🔍 Tamaño de la partitura <span id="score-scale-value">100%</span></label>
+        <input id="score-scale-range" type="range" min="50" max="180" step="5" value="100" />
+      </div>
       <div id="score" class="score"></div>
     </div>
   </section>
@@ -118,7 +122,8 @@
       <li>Usa el control de <strong>tempo</strong> para ir más rápido o más lento, <strong>⏮️</strong> para reiniciar y <strong>⬇️ MIDI</strong> para descargar el archivo MIDI de la pieza.</li>
       <li>Guarda tus piezas con <strong>💾</strong>: quedan en este navegador, en tu biblioteca de la izquierda.</li>
       <li>En la pestaña <strong>Importar MIDI</strong> puedes abrir un archivo <code>.mid</code>: se puede reproducir directamente y también convertir a ABC (aproximado).</li>
-      <li>Toca cualquier nota de la partitura o cualquier tecla del teclado para escucharla sola: su nombre aparece en la lista "Notas tocadas" (por ejemplo, <code>G3:Sol3</code>).</li>
+      <li>Toca cualquier nota de la partitura o cualquier tecla del teclado para escucharla sola: su nombre aparece en la lista "Notas tocadas" (por ejemplo, <code>G3:Sol3</code>), junto con un mini pentagrama que la ubica.</li>
+      <li>Con el control <strong>🔍 Tamaño de la partitura</strong> puedes agrandarla o achicarla a tu gusto.</li>
     </ol>
   </div>
 </div>

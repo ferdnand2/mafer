@@ -106,11 +106,18 @@ body {
 .btn-icon { font-size: 1.2rem; padding: 8px 12px; }
 
 .score-wrapper { margin-top: 14px; border-top: 1px dashed var(--color-border); padding-top: 12px; }
+.score-size-control {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  font-size: 0.78rem; color: var(--color-muted);
+}
+.score-size-control input[type=range] { width: 160px; }
 /* El modo responsive de abcjs estira la partitura para llenar TODO el
-   ancho de este contenedor — por eso hace falta un tope aquí (si no, en
-   pantallas anchas se ve enorme). Ajustable: bajar/subir este número
-   agranda o achica la partitura. */
-.score { overflow-x: auto; min-height: 120px; max-width: 960px; margin: 0 auto; }
+   ancho de este contenedor, así que controlamos el tamaño limitando el
+   ancho del propio contenedor. --score-scale lo mueve el control de
+   arriba (puro CSS: como el svg de abcjs ya es width:100% con viewBox,
+   se reescala solo, sin volver a dibujar la partitura). */
+:root { --score-scale: 1; }
+.score { overflow-x: auto; min-height: 120px; max-width: calc(960px * var(--score-scale)); margin: 0 auto; }
 
 .abcjs-cursor { stroke: var(--color-now-playing); stroke-width: 3px; pointer-events: none; }
 .abcjs-note-playing,

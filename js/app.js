@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     inputOpenAbc: document.getElementById('input-open-abc'),
     btnNewPiece: document.getElementById('btn-new-piece'),
     btnToggleAbc: document.getElementById('btn-toggle-abc'),
+    scoreScaleRange: document.getElementById('score-scale-range'),
+    scoreScaleValue: document.getElementById('score-scale-value'),
     libraryList: document.getElementById('library-list'),
     tabBtns: [...document.querySelectorAll('.tab-btn')],
     tabPanels: { abc: document.getElementById('tab-abc'), midi: document.getElementById('tab-midi') },
@@ -172,6 +174,22 @@ document.addEventListener('DOMContentLoaded', () => {
   let abcHiddenAtStart = false;
   try { abcHiddenAtStart = localStorage.getItem(ABC_HIDDEN_STORAGE_KEY) === '1'; } catch (err) { /* localStorage no disponible */ }
   setAbcHidden(abcHiddenAtStart);
+
+  // ---- Tamaño de la partitura (control del usuario, puro CSS: el svg de
+  // abcjs ya es width:100% con viewBox, así que se reescala solo sin
+  // volver a dibujar la partitura — se ve fluido mientras se arrastra) ----
+  const SCORE_SCALE_STORAGE_KEY = 'mafer.scoreScale';
+  function setScoreScale(percent) {
+    const clamped = clamp(Math.round(Number(percent) || 100), 50, 180);
+    document.documentElement.style.setProperty('--score-scale', clamped / 100);
+    els.scoreScaleValue.textContent = `${clamped}%`;
+    els.scoreScaleRange.value = clamped;
+    try { localStorage.setItem(SCORE_SCALE_STORAGE_KEY, String(clamped)); } catch (err) { /* localStorage no disponible */ }
+  }
+  els.scoreScaleRange.addEventListener('input', () => setScoreScale(els.scoreScaleRange.value));
+  let scoreScaleAtStart = 100;
+  try { scoreScaleAtStart = Number(localStorage.getItem(SCORE_SCALE_STORAGE_KEY)) || 100; } catch (err) { /* localStorage no disponible */ }
+  setScoreScale(scoreScaleAtStart);
 
   // ---- Reproducción ----
   els.btnPlay.addEventListener('click', () => engine.play().catch(showError));
