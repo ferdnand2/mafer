@@ -57,12 +57,15 @@ class AbcEngine {
       .join('\n');
     let result;
     try {
-      // scale:0.95, sin responsive (responsive e ignora `scale` por
-      // completo y además usa todo el ancho del contenedor, que fue lo
-      // que se vio "inmenso"; sin responsive, el ancho de referencia es
-      // fijo (~740px) en vez de expandirse al contenedor).
+      // Volvemos a responsive (se estira para llenar el ancho de su
+      // contenedor — por eso se vio "inmenso" con el .editor-panel entero
+      // de ancho), pero ahora el contenedor mismo tiene un max-width en
+      // el CSS (ver #score en style.css), así que "llenar el contenedor"
+      // ya no significa "llenar toda la pantalla". Sin responsive, el
+      // ancho de referencia queda fijo en ~740px sin importar la pantalla,
+      // por eso ningún valor de scale se sentía "de verdad" ajustable.
       result = abcjs.renderAbc(this.scoreEl, cleanedAbc, {
-        scale: 0.95,
+        responsive: 'resize',
         clickListener: (abcElem) => this._handleScoreClick(abcElem),
       });
     } catch (err) {
