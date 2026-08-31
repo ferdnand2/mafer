@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mafer — Partituras ABC y MIDI</title>
+<meta name="description" content="Convierte código ABC a partitura, escúchala y mírala en un teclado con las manos coloreadas. Importa y exporta MIDI." />
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<header class="app-header">
+  <div class="brand">
+    <span class="brand-icon" aria-hidden="true">🎹</span>
+    <div>
+      <h1>Mafer</h1>
+      <p class="tagline">Aprende y toca tus partituras ABC y MIDI</p>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button id="btn-help" class="btn btn-ghost" title="Ayuda rápida">¿Cómo se usa?</button>
+  </div>
+</header>
+
+<main class="app-main">
+
+  <!-- Panel lateral: biblioteca guardada en el navegador -->
+  <aside class="panel library-panel">
+    <h2>Mi biblioteca</h2>
+    <p class="hint">Se guarda en este navegador. Descarga tus piezas para no perderlas.</p>
+    <div class="library-actions">
+      <button id="btn-new-piece" class="btn btn-primary">+ Nueva pieza</button>
+    </div>
+    <ul id="library-list" class="library-list"></ul>
+  </aside>
+
+  <!-- Panel central: entrada (ABC o MIDI) y partitura -->
+  <section class="panel editor-panel">
+    <div class="tabs" role="tablist">
+      <button class="tab-btn active" data-tab="abc" role="tab" aria-selected="true">Código ABC</button>
+      <button class="tab-btn" data-tab="midi" role="tab" aria-selected="false">Importar MIDI</button>
+    </div>
+
+    <div id="tab-abc" class="tab-panel active">
+      <div class="editor-toolbar">
+        <input id="piece-name" type="text" placeholder="Nombre de la pieza" value="Pieza sin título" />
+        <button id="btn-save-piece" class="btn">💾 Guardar en biblioteca</button>
+        <button id="btn-download-abc" class="btn">⬇️ Descargar .abc</button>
+        <label class="btn btn-file">
+          ⬆️ Abrir .abc
+          <input id="input-open-abc" type="file" accept=".abc,.txt" hidden />
+        </label>
+      </div>
+      <textarea id="abc-input" class="abc-textarea" spellcheck="false"></textarea>
+      <p id="abc-error" class="error-msg" hidden></p>
+    </div>
+
+    <div id="tab-midi" class="tab-panel">
+      <p class="hint">Sube un archivo MIDI para escucharlo y, si quieres, convertirlo automáticamente a notación ABC (aproximado — funciona mejor con piezas simples y bien cuantizadas).</p>
+      <label class="btn btn-file btn-primary">
+        ⬆️ Elegir archivo .mid
+        <input id="input-open-midi" type="file" accept=".mid,.midi" hidden />
+      </label>
+      <div id="midi-import-info" class="hint"></div>
+      <button id="btn-convert-midi-to-abc" class="btn" hidden>🎼 Convertir a ABC y editar</button>
+    </div>
+
+    <div class="score-wrapper">
+      <div id="score" class="score"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Controles de reproducción + teclado, fijos abajo -->
+<footer class="playback-bar">
+  <div class="transport">
+    <button id="btn-play" class="btn btn-icon" title="Reproducir">▶️</button>
+    <button id="btn-pause" class="btn btn-icon" title="Pausar" disabled>⏸️</button>
+    <button id="btn-restart" class="btn btn-icon" title="Reiniciar">⏮️</button>
+    <div class="tempo-control">
+      <label for="tempo-range">Tempo <span id="tempo-value">100%</span></label>
+      <input id="tempo-range" type="range" min="40" max="200" step="5" value="100" />
+    </div>
+    <button id="btn-download-midi" class="btn" title="Descargar MIDI">⬇️ MIDI</button>
+    <div class="hand-legend">
+      <span class="legend-item"><i class="swatch swatch-right"></i> Mano derecha</span>
+      <span class="legend-item"><i class="swatch swatch-left"></i> Mano izquierda</span>
+    </div>
+    <span id="playback-status" class="playback-status"></span>
+  </div>
+  <div id="keyboard-container" class="keyboard-container"></div>
+</footer>
+
+<div id="help-modal" class="modal" hidden>
+  <div class="modal-content">
+    <button id="btn-close-help" class="btn btn-ghost modal-close">✕</button>
+    <h2>¿Cómo se usa Mafer?</h2>
+    <ol>
+      <li>Escribe o pega código en <strong>notación ABC</strong> en la pestaña "Código ABC", o abre un archivo <code>.abc</code>.</li>
+      <li>La partitura se dibuja sola. Pulsa <strong>▶️ Reproducir</strong> para escucharla.</li>
+      <li>Mientras suena, el teclado de abajo se ilumina: <span style="color:#e0426b">rojo</span> = mano derecha (V:1), <span style="color:#3b7cd6">azul</span> = mano izquierda (V:2).</li>
+      <li>Usa el control de <strong>tempo</strong> para ir más rápido o más lento, <strong>⏮️</strong> para reiniciar y <strong>⬇️ MIDI</strong> para descargar el archivo MIDI de la pieza.</li>
+      <li>Guarda tus piezas con <strong>💾</strong>: quedan en este navegador, en tu biblioteca de la izquierda.</li>
+      <li>En la pestaña <strong>Importar MIDI</strong> puedes abrir un archivo <code>.mid</code>: se puede reproducir directamente y también convertir a ABC (aproximado).</li>
+    </ol>
+  </div>
+</div>
+
+<!-- Librerías externas -->
+<script src="https://cdn.jsdelivr.net/npm/abcjs@6.7.0/dist/abcjs-basic-min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/build/Midi.js"></script>
+
+<!-- Código de la app -->
+<script src="js/utils.js"></script>
+<script src="js/keyboard.js"></script>
+<script src="js/library.js"></script>
+<script src="js/abc-engine.js"></script>
+<script src="js/midi-tools.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
